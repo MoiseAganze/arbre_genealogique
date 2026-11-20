@@ -57,8 +57,8 @@ function userCard(u) {
   return `<article class="user-card ${u.is_active ? '' : 'is-inactive'}" data-user="${u.id}">
       <div class="user-card__avatar" style="--h:${(u.id * 137.5) % 360}">${esc(u.display_name.slice(0, 1).toUpperCase())}</div>
       <div class="user-card__main">
-        <p class="font-semibold truncate">${esc(u.display_name)} ${admin ? '<span class="role-badge">Admin</span>' : ''} ${u.is_active ? '' : '<span class="role-badge role-badge--off">Désactivé</span>'}</p>
-        <p class="text-xs text-ink-soft truncate">@${esc(u.username)}${u.email ? ' · ' + esc(u.email) : ''}</p>
+        <p class="font-semibold user-card__name">${esc(u.display_name)} ${admin ? '<span class="role-badge">Admin</span>' : ''} ${u.is_active ? '' : '<span class="role-badge role-badge--off">Désactivé</span>'}</p>
+        <p class="text-xs text-ink-soft user-card__sub">@${esc(u.username)}${u.email ? ' · ' + esc(u.email) : ''}</p>
         <p class="text-xs text-ink-soft mt-0.5">${person ? `${icon('user', 'size-3 inline')} ${esc(fullName(person))} · ` : ''}${u.last_login_at ? `Dernière connexion le ${formatDate(u.last_login_at.slice(0, 10))}` : 'Jamais connecté'}</p>
       </div>
       <div class="user-card__perms">${PERMS.map(([k, l, ic]) => `

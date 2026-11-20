@@ -28,7 +28,8 @@ function layout_head(string $title, string $bodyClass = ''): void
 </script>
 <link rel="stylesheet" href="<?= e(asset('assets/css/app.css')) ?>">
 </head>
-<body class="h-full overflow-hidden font-sans text-ink antialiased <?= e($bodyClass) ?>">
+<?php // Seule la page de l'arbre bloque le défilement (l'arbre gère son propre déplacement) ?>
+<body class="font-sans text-ink antialiased <?= str_contains($bodyClass, 'app-page') ? 'h-full overflow-hidden' : 'min-h-full' ?> <?= e($bodyClass) ?>">
 <canvas id="sky" aria-hidden="true"></canvas>
 <?php
 }
