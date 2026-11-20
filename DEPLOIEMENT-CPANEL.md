@@ -1,7 +1,7 @@
 # Déployer l'arbre sur cPanel (sans install.php)
 
 Prévoyez environ 15 minutes. Il vous faut :
-- le fichier **`arbre_famille-cpanel.zip`** (dossier `dist/` ; pour le refaire : `npm run zip`) ;
+- le dossier du projet `arbre_famille` ;
 - un accès à votre **cPanel**.
 
 ---
@@ -26,7 +26,7 @@ cPanel → **Assistant de base de données MySQL** (*MySQL Database Wizard*) :
 
 ## 3. Créer les tables et votre compte administrateur
 
-1. Sur votre ordinateur, ouvrez **`database/install-cpanel.sql`** (dans le zip) avec un éditeur de texte (Bloc-notes, VS Code…).
+1. Sur votre ordinateur, ouvrez **`database/install-cpanel.sql`** avec un éditeur de texte (Bloc-notes, VS Code…).
 2. Tout en bas, modifiez les 3 lignes marquées 👉 :
    ```sql
    ('family_name', 'Famille Dupont'),       -- le nom de votre arbre
@@ -39,15 +39,16 @@ cPanel → **Assistant de base de données MySQL** (*MySQL Database Wizard*) :
 
 ## 4. Envoyer les fichiers
 
-cPanel → **Gestionnaire de fichiers** (*File Manager*) :
+**Fichiers à envoyer** : tout le projet, **sauf** `node_modules/`, `src/`, `.claude/`, `package.json`, `package-lock.json`, `app/config.php` (s'il existe sur votre ordinateur) et le contenu de `uploads/` (gardez seulement `uploads/.htaccess`).
+**Supprimez aussi `install.php`** : il n'est pas utile pour une installation manuelle.
 
-- **Arbre à la racine du site** (`https://mondomaine.fr`) : ouvrez `public_html`, envoyez le zip puis faites *Extraire*. Déplacez le **contenu** du dossier `arbre_famille/` directement dans `public_html` (sélectionner tout → *Déplacer*).
-- **Arbre dans un sous-dossier** (`https://mondomaine.fr/famille`) : extrayez dans `public_html` et renommez le dossier `arbre_famille` en `famille`.
-- **Sous-domaine** (`https://famille.mondomaine.fr`) : cPanel → *Domaines* → créez le sous-domaine, puis extrayez dans le dossier qu'il indique.
+Le plus simple : compressez ces fichiers en `.zip` sur votre ordinateur, puis, dans cPanel → **Gestionnaire de fichiers** (*File Manager*) :
+
+- **Arbre à la racine du site** (`https://mondomaine.fr`) : dans `public_html`, envoyez le zip puis *Extraire*. Les fichiers (`index.php`, `app/`, `assets/`…) doivent se trouver directement dans `public_html`.
+- **Arbre dans un sous-dossier** (`https://mondomaine.fr/famille`) : créez le dossier `public_html/famille` et extrayez-y le zip.
+- **Sous-domaine** (`https://famille.mondomaine.fr`) : cPanel → *Domaines* → créez le sous-domaine, puis extrayez le zip dans le dossier qu'il indique.
 
 Supprimez ensuite le fichier `.zip` du serveur.
-
-> Le zip ne contient pas `install.php` : ce n'est pas un oubli.
 
 ## 5. Créer le fichier de configuration
 
@@ -98,7 +99,8 @@ Une fois le cadenas actif, ouvrez **`.htaccess`** (à la racine de l'arbre ; act
 ## Mettre à jour plus tard
 
 Envoyez les nouveaux fichiers **sans écraser** `app/config.php` ni le dossier `uploads/` (vos photos).
-La base se met à jour **toute seule** à la première visite qui suit l'envoi : par exemple, la colonne « postnom » est ajoutée automatiquement aux arbres déjà installés. Il n'y a aucun script à lancer.
+La base se met à jour **toute seule** à la première visite qui suit l'envoi : par exemple, la colonne « postnom » est ajoutée automatiquement aux arbres déjà installés.
+Pour faire la mise à jour à la main (ou si l'utilisateur MySQL n'a pas le droit `ALTER`), exécutez dans phpMyAdmin, onglet *SQL*, les fichiers de **`database/migrations/`** dans l'ordre (par exemple `002_ajout_postnom.sql`).
 Ne ré-importez **jamais** `install-cpanel.sql` sur une base en service : ce script vide toutes les tables.
 
 ## Sauvegarder

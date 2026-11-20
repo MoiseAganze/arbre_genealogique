@@ -3,4 +3,3 @@
 !/uploads/.htaccess
 /node_modules/
 /.claude/test-credentials.env
-/dist/

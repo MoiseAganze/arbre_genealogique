@@ -4,8 +4,7 @@
   "description": "Arbre généalogique familial interactif (PHP, MySQL, Tailwind CSS)",
   "scripts": {
     "build": "tailwindcss -i ./src/css/input.css -o ./assets/css/app.css --minify",
-    "watch": "tailwindcss -i ./src/css/input.css -o ./assets/css/app.css --watch",
-    "zip": "npm run build && python3 tools/build_cpanel_zip.py"
+    "watch": "tailwindcss -i ./src/css/input.css -o ./assets/css/app.css --watch"
   },
   "devDependencies": {
     "@tailwindcss/cli": "4.3.5",

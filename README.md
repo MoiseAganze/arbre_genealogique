@@ -22,7 +22,7 @@ Application web d'arbre généalogique interactif, faite en **PHP 8.1+, MySQL / 
 
 ### Sur un hébergement cPanel, sans assistant
 
-Suivez **[DEPLOIEMENT-CPANEL.md](DEPLOIEMENT-CPANEL.md)** : un zip prêt à envoyer (`npm run zip` → `dist/`), un script SQL à importer dans phpMyAdmin, qui crée aussi le compte administrateur, et un `app/config.php` à remplir.
+Suivez **[DEPLOIEMENT-CPANEL.md](DEPLOIEMENT-CPANEL.md)** : les fichiers à envoyer, un script SQL à importer dans phpMyAdmin, qui crée aussi le compte administrateur, et un `app/config.php` à remplir.
 
 ### Avec l'assistant d'installation
 
