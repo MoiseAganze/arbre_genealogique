@@ -1,0 +1,5 @@
+/app/config.php
+/uploads/*
+!/uploads/.htaccess
+/node_modules/
+/.claude/test-credentials.env
