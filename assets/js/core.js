@@ -63,7 +63,8 @@ export function html(str) {
 // ---------------------------------------------------------------------
 //  Personnes
 // ---------------------------------------------------------------------
-export const fullName = (p) => [p?.first_names, p?.last_name].filter(Boolean).join(' ') || 'Sans nom';
+/** Nom complet : Prénom(s) Nom Postnom */
+export const fullName = (p) => [p?.first_names, p?.last_name, p?.postnom].filter(Boolean).join(' ') || 'Sans nom';
 export const firstName = (p) => (p?.first_names || '').split(/\s+/)[0] || 'Sans nom';
 
 export function initials(p) {

@@ -1,6 +1,25 @@
 # Aucune exécution de script dans le dossier des photos
-<FilesMatch "\.(php|phtml|phar|pl|py|cgi|sh)$">
+<FilesMatch "\.(php|php\d|phtml|phar|pl|py|cgi|sh|shtml)$">
     Require all denied
 </FilesMatch>
-php_flag engine off
+
+# Seules les images sont servies
+<IfModule mod_headers.c>
+    <FilesMatch "\.(webp|jpe?g|png|gif)$">
+        Header set X-Content-Type-Options "nosniff"
+    </FilesMatch>
+</IfModule>
+
+# Désactive PHP uniquement si PHP tourne comme module Apache
+# (sur PHP-FPM / LiteSpeed, cette directive provoquerait une erreur 500)
+<IfModule mod_php.c>
+    php_flag engine off
+</IfModule>
+<IfModule mod_php7.c>
+    php_flag engine off
+</IfModule>
+<IfModule mod_php8.c>
+    php_flag engine off
+</IfModule>
+
 Options -Indexes

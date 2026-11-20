@@ -209,7 +209,16 @@
 }
 .field select option { background: var(--surface-solid); color: var(--ink); }
 .field .is-invalid, .is-invalid { border-color: var(--danger) !important; }
-.date-preview { font-variant-numeric: tabular-nums; }
+.date-preview { font-variant-numeric: tabular-nums; font-size: .72rem; color: var(--ink-soft); margin-left: auto; }
+.field--date input[type="date"] { min-height: 2.65rem; font-variant-numeric: tabular-nums; }
+.field--date input[type="date"]::-webkit-calendar-picker-indicator { cursor: pointer; opacity: .65; transition: opacity .2s; }
+.field--date input[type="date"]::-webkit-calendar-picker-indicator:hover { opacity: 1; }
+.dark .field--date input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
+.date-partial { display: grid; grid-template-columns: 1.4fr 1fr; gap: .5rem; }
+.date-opts { display: flex; flex-wrap: wrap; align-items: center; gap: .3rem .9rem; margin-top: .1rem; }
+.mini-check { display: inline-flex; align-items: center; gap: .35rem; font-size: .74rem; color: var(--ink-soft); cursor: pointer; user-select: none; }
+.mini-check input { width: .9rem; height: .9rem; accent-color: var(--accent); }
+.mini-check:hover { color: var(--ink); }
 
 .check { display: flex; align-items: center; gap: .6rem; font-size: .88rem; cursor: pointer; }
 .check input { width: 1.05rem; height: 1.05rem; accent-color: var(--accent); }

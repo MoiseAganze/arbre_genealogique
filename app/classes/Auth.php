@@ -82,13 +82,14 @@ final class Auth
         }
 
         $u = Database::one('SELECT * FROM users WHERE username = ? AND is_active = 1', [$username]);
-        if (!$u || !password_verify($password, $u['password_hash'])) {
+        if (!$u || !self::verify($password, $u['password_hash'])) {
             $_SESSION['login_fails'] = $fails + 1;
             usleep(400000);
             return false;
         }
 
-        if (password_needs_rehash($u['password_hash'], PASSWORD_DEFAULT)) {
+        // Mot de passe provisoire (SHA-256 créé en SQL) ou ancien hachage : on le sécurise tout de suite
+        if (self::isProvisional($u['password_hash']) || password_needs_rehash($u['password_hash'], PASSWORD_DEFAULT)) {
             Database::run('UPDATE users SET password_hash = ? WHERE id = ?', [password_hash($password, PASSWORD_DEFAULT), $u['id']]);
         }
 
@@ -98,6 +99,24 @@ final class Auth
         Database::run('UPDATE users SET last_login_at = NOW() WHERE id = ?', [$u['id']]);
         self::$loaded = false;
         return true;
+    }
+
+    /**
+     * Vérifie un mot de passe. Accepte aussi un hachage SHA-256 (64 caractères
+     * hexadécimaux) créé à la main avec SHA2('…', 256) lors d'une installation
+     * manuelle ; il est remplacé par bcrypt à la première connexion.
+     */
+    public static function verify(string $password, string $hash): bool
+    {
+        if (self::isProvisional($hash)) {
+            return hash_equals(strtolower($hash), hash('sha256', $password));
+        }
+        return password_verify($password, $hash);
+    }
+
+    public static function isProvisional(string $hash): bool
+    {
+        return (bool) preg_match('/^[a-f0-9]{64}$/i', $hash);
     }
 
     public static function logout(): void

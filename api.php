@@ -375,7 +375,7 @@ try {
         case 'me.password':
             need_post();
             $me = Database::one('SELECT password_hash FROM users WHERE id = ?', [Auth::user()['id']]);
-            if (!password_verify((string) ($in['current'] ?? ''), $me['password_hash'])) {
+            if (!Auth::verify((string) ($in['current'] ?? ''), $me['password_hash'])) {
                 json_error('Mot de passe actuel incorrect.');
             }
             $new = (string) ($in['new'] ?? '');

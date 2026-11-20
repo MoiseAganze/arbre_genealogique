@@ -54,6 +54,7 @@ CREATE TABLE persons (
     id              INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     first_names     VARCHAR(160) NOT NULL,
     last_name       VARCHAR(120) NOT NULL DEFAULT '',
+    postnom         VARCHAR(120) NULL,
     birth_name      VARCHAR(120) NULL COMMENT 'Nom de naissance / de jeune fille',
     nickname        VARCHAR(80)  NULL,
     gender          ENUM('M','F','U') NOT NULL DEFAULT 'U',

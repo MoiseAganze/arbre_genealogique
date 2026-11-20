@@ -18,7 +18,7 @@ final class Family
     public static function treeData(): array
     {
         $persons = Database::all(
-            "SELECT p.id, p.first_names, p.last_name, p.birth_name, p.nickname, p.gender, p.is_living,
+            "SELECT p.id, p.first_names, p.last_name, p.postnom, p.birth_name, p.nickname, p.gender, p.is_living,
                     p.birth_date, p.birth_approx, p.birth_place, p.death_date, p.death_approx, p.death_place,
                     p.occupation, ph.thumb_name AS photo_thumb
                FROM persons p
@@ -129,6 +129,7 @@ final class Family
         $map = [
             'first_names'  => fn ($v) => clean_str($v, 160),
             'last_name'    => fn ($v) => clean_str($v, 120) ?? '',
+            'postnom'      => fn ($v) => clean_str($v, 120),
             'birth_name'   => fn ($v) => clean_str($v, 120),
             'nickname'     => fn ($v) => clean_str($v, 80),
             'gender'       => fn ($v) => clean_enum($v, self::GENDERS, 'U'),
@@ -227,7 +228,7 @@ final class Family
     public static function trash(): array
     {
         return Database::all(
-            'SELECT p.id, p.first_names, p.last_name, p.birth_date, p.death_date, p.deleted_at, u.display_name AS deleted_by_name
+            'SELECT p.id, p.first_names, p.last_name, p.postnom, p.birth_date, p.death_date, p.deleted_at, u.display_name AS deleted_by_name
                FROM persons p LEFT JOIN users u ON u.id = p.deleted_by
               WHERE p.deleted_at IS NOT NULL ORDER BY p.deleted_at DESC'
         );
@@ -250,8 +251,8 @@ final class Family
 
     public static function label(int $id): string
     {
-        $p = Database::one('SELECT first_names, last_name FROM persons WHERE id = ?', [$id]);
-        return $p ? trim($p['first_names'] . ' ' . $p['last_name']) : '#' . $id;
+        $p = Database::one('SELECT first_names, last_name, postnom FROM persons WHERE id = ?', [$id]);
+        return $p ? trim(implode(' ', array_filter([$p['first_names'], $p['last_name'], $p['postnom']]))) : '#' . $id;
     }
 
     public static function mustExist(int $id): void

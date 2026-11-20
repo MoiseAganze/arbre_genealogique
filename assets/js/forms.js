@@ -2,7 +2,7 @@
 //  Formulaires : personne (ajout / modification), union, métier,
 //  événement, recadrage de photo.
 // =====================================================================
-import { api, esc, icon, toast, fullName, firstName, genderize, formatDate, parseInputDate, toInputDate, avatarHtml, lifespan, normalize, debounce, UNION_TYPES, UNION_STATUSES, CHILD_RELATIONS, EVENT_TYPES, $, $$ } from './core.js';
+import { api, esc, icon, toast, fullName, firstName, genderize, formatDate, avatarHtml, lifespan, normalize, debounce, UNION_TYPES, UNION_STATUSES, CHILD_RELATIONS, EVENT_TYPES, $, $$ } from './core.js';
 import { store } from './store.js';
 import { openModal, confirmDialog } from './modal.js';
 
@@ -18,10 +18,47 @@ export function field(name, label, value = '', { type = 'text', placeholder = ''
   return `<label class="field ${cls}"><span>${label}${required ? ' <i class="text-danger not-italic">*</i>' : ''}</span>${input}${hint ? `<small>${hint}</small>` : ''}</label>`;
 }
 
+const MONTH_NAMES = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+
+/**
+ * Champ date : calendrier natif (type="date").
+ * Case « Date incomplète » : année seule, ou mois + année (fréquent pour les ancêtres).
+ * Case « Environ » : date approximative.
+ */
 export function dateField(prefix, label, iso, approx, { cls = '' } = {}) {
-  return `<label class="field field--date ${cls}"><span>${label}</span>
-      <input name="${prefix}__date" data-date="${prefix}" value="${attr(toInputDate(iso, approx))}" placeholder="JJ/MM/AAAA, MM/AAAA, AAAA ou « vers 1920 »" autocomplete="off">
-      <small class="date-preview" data-preview="${prefix}">${iso ? '→ ' + esc(formatDate(iso, approx)) : 'Date complète, partielle ou approximative'}</small></label>`;
+  const parts = String(iso || '').split('-');
+  const partial = !!iso && parts.length < 3;
+  const [y, m] = parts;
+  const max = prefix === 'birth' || prefix === 'death' ? new Date().toISOString().slice(0, 10) : '';
+  return `<div class="field field--date ${cls}" data-datefield="${prefix}">
+      <span>${label}</span>
+      <input type="date" data-d-full value="${partial ? '' : attr(iso)}" ${max ? `max="${max}"` : ''} min="0001-01-01" class="${partial ? 'hidden' : ''}" aria-label="${attr(label)}">
+      <div class="date-partial ${partial ? '' : 'hidden'}">
+        <select data-d-month aria-label="Mois"><option value="">Mois inconnu</option>${MONTH_NAMES.map((mo, i) => `<option value="${i + 1}" ${Number(m) === i + 1 ? 'selected' : ''}>${mo}</option>`).join('')}</select>
+        <input type="number" data-d-year min="1" max="2200" step="1" placeholder="Année" value="${partial ? attr(y) : ''}" aria-label="Année">
+      </div>
+      <div class="date-opts">
+        <label class="mini-check"><input type="checkbox" data-d-partial ${partial ? 'checked' : ''}><span>Date incomplète</span></label>
+        <label class="mini-check"><input type="checkbox" data-d-approx ${approx ? 'checked' : ''}><span>Environ</span></label>
+        <small class="date-preview" data-preview>${iso ? '→ ' + esc(formatDate(iso, approx)) : ''}</small>
+      </div>
+    </div>`;
+}
+
+/** Valeur ISO partielle d'un champ date : 'AAAA-MM-JJ', 'AAAA-MM', 'AAAA' ou '' */
+function readDateField(box) {
+  const partial = $('[data-d-partial]', box).checked;
+  const approx = $('[data-d-approx]', box).checked;
+  if (!partial) return { value: $('[data-d-full]', box).value || '', approx };
+  const y = $('[data-d-year]', box).value.trim();
+  const m = $('[data-d-month]', box).value;
+  if (!y) {
+    if (m) throw new Error('indiquez au moins l\'année.');
+    return { value: '', approx };
+  }
+  const yn = parseInt(y, 10);
+  if (!(yn >= 1 && yn <= 2200)) throw new Error(`année invalide (${y}).`);
+  return { value: String(yn).padStart(4, '0') + (m ? '-' + String(m).padStart(2, '0') : ''), approx };
 }
 
 export function select(name, label, options, value, { cls = '' } = {}) {
@@ -37,16 +74,38 @@ function segmented(name, options, value) {
 
 /** Active l'aperçu des dates et retourne un lecteur de formulaire */
 function wireDates(root) {
-  for (const input of $$('[data-date]', root)) {
-    const prev = root.querySelector(`[data-preview="${input.dataset.date}"]`);
+  for (const box of $$('[data-datefield]', root)) {
+    const full = $('[data-d-full]', box);
+    const partialBox = $('.date-partial', box);
+    const toggle = $('[data-d-partial]', box);
+    const year = $('[data-d-year]', box);
+    const month = $('[data-d-month]', box);
+    const prev = $('[data-preview]', box);
     const update = () => {
-      const r = parseInputDate(input.value);
-      input.classList.toggle('is-invalid', !r.ok);
-      if (!input.value.trim()) prev.textContent = 'Date complète, partielle ou approximative';
-      else prev.textContent = r.ok && r.value ? `→ ${formatDate(r.value, r.approx)}` : 'Format non reconnu';
-      prev.classList.toggle('text-danger', !r.ok);
+      try {
+        const r = readDateField(box);
+        prev.textContent = r.value ? `→ ${formatDate(r.value, r.approx)}` : '';
+        prev.classList.remove('text-danger');
+      } catch (e) {
+        prev.textContent = e.message;
+        prev.classList.add('text-danger');
+      }
     };
-    input.addEventListener('input', update);
+    toggle.addEventListener('change', () => {
+      const on = toggle.checked;
+      // Ce qui est déjà saisi passe d'un mode à l'autre
+      if (on && full.value) {
+        const [y, m] = full.value.split('-');
+        year.value = String(parseInt(y, 10));
+        month.value = String(parseInt(m, 10));
+      }
+      full.classList.toggle('hidden', on);
+      partialBox.classList.toggle('hidden', !on);
+      (on ? year : full).focus();
+      update();
+    });
+    box.addEventListener('input', update);
+    box.addEventListener('change', update);
   }
 }
 
@@ -56,15 +115,16 @@ function readForm(form) {
     if (!el.name || el.disabled) continue;
     if (el.type === 'radio' && !el.checked) continue;
     if (el.type === 'checkbox') { data[el.name] = el.checked; continue; }
-    if (el.dataset.date) {
-      const r = parseInputDate(el.value);
-      if (!r.ok) throw new Error(`Date non reconnue : « ${el.value} »`);
-      data[`${el.dataset.date}_date`] = r.value;
-      data[`${el.dataset.date}_approx`] = r.approx;
-      continue;
-    }
     if (el.type === 'file') continue;
     data[el.name] = el.value;
+  }
+  // Champs date → prefix_date + prefix_approx
+  for (const box of $$('[data-datefield]', form)) {
+    const label = box.querySelector('span')?.textContent || 'Date';
+    let r;
+    try { r = readDateField(box); } catch (e) { throw new Error(`${label} : ${e.message}`); }
+    data[`${box.dataset.datefield}_date`] = r.value;
+    data[`${box.dataset.datefield}_approx`] = r.approx;
   }
   return data;
 }
@@ -127,9 +187,10 @@ export function openPersonForm({ mode = 'create', relation = { type: 'none' }, p
         </div>
         <div class="space-y-3 min-w-0">
           ${segmented('gender', [['M', 'Homme', ''], ['F', 'Femme', ''], ['U', 'Non précisé', '']], p.gender || 'U')}
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
             ${field('first_names', 'Prénom(s)', p.first_names, { required: true, placeholder: 'Jean Pierre' })}
-            ${field('last_name', 'Nom', p.last_name, { placeholder: 'Dupont' })}
+            ${field('last_name', 'Nom', p.last_name, { placeholder: 'Kabongo' })}
+            ${field('postnom', 'Postnom', p.postnom, { placeholder: 'Mutombo' })}
           </div>
           <div class="duplicates hidden" data-duplicates></div>
         </div>
@@ -261,7 +322,7 @@ export function openPersonForm({ mode = 'create', relation = { type: 'none' }, p
   if (!isEdit) {
     const check = debounce(() => {
       const fn = form.elements.first_names.value.trim();
-      const ln = form.elements.last_name.value.trim();
+      const ln = `${form.elements.last_name.value.trim()} ${form.elements.postnom.value.trim()}`.trim();
       if (fn.length < 2) { dupBox.classList.add('hidden'); return; }
       const res = searchPersons(`${fn} ${ln}`, 3, new Set([relation.of])).filter((x) => x.score >= 2);
       if (!res.length || relation.type === 'none') { dupBox.classList.add('hidden'); return; }
@@ -271,6 +332,7 @@ export function openPersonForm({ mode = 'create', relation = { type: 'none' }, p
     }, 250);
     form.elements.first_names.addEventListener('input', check);
     form.elements.last_name.addEventListener('input', check);
+    form.elements.postnom.addEventListener('input', check);
     dupBox.addEventListener('click', (e) => {
       const b = e.target.closest('[data-use]');
       if (!b) return;
@@ -432,7 +494,7 @@ export function searchPersons(q, limit = 10, exclude = new Set()) {
   const out = [];
   for (const p of store.persons.values()) {
     if (exclude.has(p.id)) continue;
-    const hay = normalize([p.first_names, p.last_name, p.birth_name, p.nickname].filter(Boolean).join(' '));
+    const hay = normalize([p.first_names, p.last_name, p.postnom, p.birth_name, p.nickname].filter(Boolean).join(' '));
     const words = hay.split(/\s+/);
     let score = 0;
     let all = true;

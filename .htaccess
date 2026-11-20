@@ -1,6 +1,16 @@
 Options -Indexes
 DirectoryIndex index.php
-<FilesMatch "^(package(-lock)?\.json|README\.md|\.gitignore)$">
+
+# Fichiers de développement jamais servis
+<FilesMatch "^(package(-lock)?\.json|README\.md|DEPLOIEMENT-CPANEL\.md|\.gitignore|.*\.sql)$">
     Require all denied
 </FilesMatch>
-RedirectMatch 403 ^/?node_modules/
+RedirectMatch 403 ^/?(.*/)?(node_modules|\.claude|\.git)(/|$)
+
+# Note : install.php refuse de fonctionner une fois app/config.php créé.
+# Pour une installation manuelle (cPanel), il n'est pas nécessaire : supprimez-le.
+
+# Forcer HTTPS (décommentez quand le certificat SSL est actif — AutoSSL dans cPanel)
+# RewriteEngine On
+# RewriteCond %{HTTPS} !=on
+# RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]

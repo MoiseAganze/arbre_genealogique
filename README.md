@@ -10,7 +10,8 @@ Application web d'arbre généalogique interactif, faite en **PHP 8.1+, MySQL / 
 - **Défunts et vivants** : photo en noir et blanc avec « † » pour les défunts ; anneau coloré animé avec un point vert pour les vivants.
 - **Navigation** : déplacement à la souris ou au doigt (avec inertie), zoom à la molette ou en pinçant, double-clic pour placer une personne au centre (transition animée), mini-carte, historique des personnes visitées, recherche `Ctrl+K`, raccourcis clavier (`?` pour les afficher).
 - **Ajout en 2 clics** : boutons « + » autour de chaque carte (parent, conjoint, enfant, frère/sœur). Le formulaire est court ; les détails se déplient au besoin. On peut aussi relier une personne déjà présente, et l'application signale les doublons possibles.
-- **Dates souples** : `14/03/1923`, `03/1923`, `1923`, `14 mars 1923`, `vers 1920`.
+- **Noms** : prénom(s), nom, **postnom**, nom de naissance et surnom. Le nom complet s'affiche « Prénom Nom Postnom ».
+- **Dates** : calendrier natif (`type="date"`). La case « Date incomplète » permet de n'indiquer que l'année ou le mois et l'année ; la case « Environ » marque une date approximative.
 - **Fiche détaillée** (5 onglets) : aperçu, vie (parcours professionnel, biographie, anecdotes), famille, galerie photos (recadrage du portrait, légendes, photo de profil), chronologie automatique.
 - **Bonus** : calcul du lien de parenté (cousin issu de germains, grand-oncle, belle-sœur…), anniversaires et souvenirs à venir, statistiques de la famille.
 - **Consultation publique** : toute personne qui a le lien voit l'arbre et les fiches **en lecture seule**, sans compte. Les téléphones, e-mails et notes privées restent réservés aux comptes connectés. L'administrateur peut rendre l'arbre privé dans *Administration → Réglages*.
@@ -18,6 +19,12 @@ Application web d'arbre généalogique interactif, faite en **PHP 8.1+, MySQL / 
 - **Thèmes** : sombre « galaxie » (voie lactée, étoiles qui scintillent, étoiles filantes) et clair « ciel d'été » (soleil rayonnant, nuages sur 3 plans, oiseaux). La bascule se fait avec une révélation circulaire.
 
 ## Installation
+
+### Sur un hébergement cPanel, sans assistant
+
+Suivez **[DEPLOIEMENT-CPANEL.md](DEPLOIEMENT-CPANEL.md)** : un zip prêt à envoyer (`npm run zip` → `dist/`), un script SQL à importer dans phpMyAdmin, qui crée aussi le compte administrateur, et un `app/config.php` à remplir.
+
+### Avec l'assistant d'installation
 
 1. Copiez le dossier sur votre serveur (Apache, ou XAMPP / WAMP / Laragon en local), avec PHP 8.1+ et les extensions `pdo_mysql`, `gd`, `fileinfo` et `mbstring`.
 2. Les dossiers `app/` et `uploads/` doivent être accessibles en écriture par PHP.

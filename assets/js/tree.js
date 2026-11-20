@@ -184,7 +184,7 @@ export class TreeView {
       <button class="card__add card__add--bottom" data-add="child" data-tip="Ajouter un enfant">${icon('plus', 'size-3.5')}</button>
       <button class="card__add card__add--left" data-add="sibling" data-tip="Ajouter un frère ou une sœur">${icon('users', 'size-3.5')}</button>` : '';
 
-    const name = p.nickname && this.options.compact ? p.nickname : [p.first_names?.split(/\s+/)[0], p.last_name].filter(Boolean).join(' ');
+    const name = p.nickname && this.options.compact ? p.nickname : [p.first_names?.split(/\s+/)[0], p.last_name, this.options.compact ? '' : p.postnom].filter(Boolean).join(' ');
     el.innerHTML = `
       <div class="card__glow"></div>
       <div class="card__body">
